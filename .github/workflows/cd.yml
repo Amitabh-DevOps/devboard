@@ -8,21 +8,30 @@ on:
 jobs:
     deploy:
         
-        runs-on: self-hosted
+        runs-on: ubuntu-latest
         steps:
             - name: Code Checkout
               uses: actions/checkout@v7
 
-            - name: Copy Example Env to main env
-              run: cp .env.example .env
-
-            - name: Docker Setup [Login]
-              uses: docker/login-action@v4
+            - name: Deploy to EC2 via SSH
+              uses: appleboy/ssh-action@v1.0.3
               with:
-                username: ${{ vars.DOCKERHUB_USERNAME }}
-                password: ${{ secrets.DOCKERHUB_TOKEN }}
+                host: ${{ secrets.EC2_HOST }}
+                username: ${{ secrets.EC2_USERNAME }}
+                key: ${{ secrets.EC2_SSH_KEY }}
+                script: |
+                  cd ${{ secrets.EC2_TARGET_DIR || '/home/ubuntu/devboard' }}
+                  export DOCKERHUB_USERNAME="${{ vars.DOCKERHUB_USERNAME }}"
+                  docker compose pull
+                  docker compose up -d
 
-            - name: Deploy the containers with Docker Compose
+            - name: Wait for services to be healthy
               run: |
-                docker compose pull
-                docker compose up -d
+                timeout 60s sh -c 'until curl -s http://${{ secrets.EC2_HOST }}:8080 > /dev/null; do sleep 2; done'
+
+            - name: OWASP ZAP Baseline Scan
+              uses: zaproxy/action-baseline@v0.14.0
+              with:
+                token: ${{ secrets.GITHUB_TOKEN }}
+                target: 'http://${{ secrets.EC2_HOST }}:8080'
+                fail_action: false
