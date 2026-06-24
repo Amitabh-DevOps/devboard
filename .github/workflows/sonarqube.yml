@@ -28,4 +28,10 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+      - name: Upload SonarQube Task Metadata
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonarqube-report-task
+          path: .scannerwork/report-task.txt
           
