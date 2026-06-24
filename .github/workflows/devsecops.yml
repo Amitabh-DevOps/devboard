@@ -47,16 +47,10 @@ jobs:
 
   deploy:
     needs: [trivy-frontend, trivy-backend, sonarqube]
-    permissions:
-      issues: write
-      contents: read
     uses: ./.github/workflows/cd.yml
     secrets: inherit
 
   zap-scan:
     needs: deploy
-    permissions:
-      issues: write
-      contents: read
     uses: ./.github/workflows/zap-scan.yml
     secrets: inherit
