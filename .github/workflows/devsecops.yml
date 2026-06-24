@@ -1,10 +1,14 @@
-# Goal - I have to Lint, Build, Test the code for Frontend & Backend
-# then Push the images to DockerHub 
+# Reusable DevSecOps Pipeline Orchestrator
+# Checks -> SAST -> Docker Package -> Trivy Scan -> EC2 Deploy -> DAST Scan
 name: DevSecOps
 
 on: 
     push:
         branches: [ master ]
+        paths-ignore:
+          - 'README.md'
+          - '.gitignore'
+          - 'LICENSE'
 
 jobs:
   checks:

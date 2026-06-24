@@ -1,4 +1,4 @@
-# Goal: To deploy the built images from CI Steps once the CI Worklow is Succeeded
+# Reusable CD Deployment Workflow (SSH EC2 Deploy & Image Pruning)
 
 name: CD
 
