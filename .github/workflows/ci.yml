@@ -132,6 +132,9 @@ jobs:
 
     deploy:
         needs: [frontend, backend, sonarqube]
+        permissions:
+            issues: write
+            contents: read
         uses: ./.github/workflows/cd.yml
         secrets: inherit
 
