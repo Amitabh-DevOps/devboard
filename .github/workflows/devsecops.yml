@@ -1,0 +1,56 @@
+# Goal - I have to Lint, Build, Test the code for Frontend & Backend
+# then Push the images to DockerHub 
+name: DevSecOps
+
+on: 
+    push:
+        branches: [ master ]
+
+jobs:
+  checks:
+    uses: ./.github/workflows/checks.yml
+    secrets: inherit
+
+  sonarqube:
+    uses: ./.github/workflows/sonarqube.yml
+    secrets: inherit
+
+  frontend:
+    needs: checks
+    uses: ./.github/workflows/frontend-ci.yml
+    secrets: inherit
+
+  backend:
+    needs: checks
+    uses: ./.github/workflows/backend-ci.yml
+    secrets: inherit
+
+  trivy-frontend:
+    needs: frontend
+    uses: ./.github/workflows/trivy-scan.yml
+    with:
+      image-ref: ${{ vars.DOCKERHUB_USERNAME }}/devboard-frontend:latest
+    secrets: inherit
+
+  trivy-backend:
+    needs: backend
+    uses: ./.github/workflows/trivy-scan.yml
+    with:
+      image-ref: ${{ vars.DOCKERHUB_USERNAME }}/devboard-backend:latest
+    secrets: inherit
+
+  deploy:
+    needs: [trivy-frontend, trivy-backend, sonarqube]
+    permissions:
+      issues: write
+      contents: read
+    uses: ./.github/workflows/cd.yml
+    secrets: inherit
+
+  zap-scan:
+    needs: deploy
+    permissions:
+      issues: write
+      contents: read
+    uses: ./.github/workflows/zap-scan.yml
+    secrets: inherit
